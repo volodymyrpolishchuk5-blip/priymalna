@@ -4,6 +4,15 @@
     { "source": "/api/webhook", "destination": "/api/webhook.py" },
     { "source": "/api/services", "destination": "/api/services.py" },
     { "source": "/api/masters", "destination": "/api/masters.py" },
-    { "source": "/api/bookings", "destination": "/api/bookings.py" }
+    { "source": "/api/bookings", "destination": "/api/bookings.py" },
+    { "source": "/api/clients", "destination": "/api/clients.py" },
+    { "source": "/api/stats", "destination": "/api/stats.py" },
+    { "source": "/api/promocodes", "destination": "/api/promocodes.py" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 * * * *"
+    }
   ]
 }

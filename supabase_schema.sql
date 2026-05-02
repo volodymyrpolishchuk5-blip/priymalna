@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS masters (
     tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     specialty TEXT,
-    telegram_id TEXT -- Може бути ID (число) або @username
+    telegram_id TEXT, -- Може бути ID (число) або @username
+    commission_rate INTEGER DEFAULT 50 -- Відсоток зарплати майстра
 );
 
 -- 3. Services
@@ -51,22 +52,37 @@ CREATE TABLE IF NOT EXISTS appointments (
     client_name TEXT NOT NULL,
     client_phone TEXT NOT NULL,
     service TEXT NOT NULL,
+    price INTEGER DEFAULT 0,
     date TEXT NOT NULL,
     time TEXT NOT NULL,
     status TEXT DEFAULT 'active', -- active, виконано, скасовано, waitlist
+    reminder_24h_sent BOOLEAN DEFAULT FALSE,
+    reminder_1h_sent BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Enable Row Level Security (recommended)
+-- 6. Promocodes
+CREATE TABLE IF NOT EXISTS promocodes (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    code TEXT NOT NULL,
+    discount_percent INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    UNIQUE(tenant_id, code)
+);
+
+-- 7. Enable Row Level Security (recommended)
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE masters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE promocodes ENABLE ROW LEVEL SECURITY;
 
--- 7. Allow full access via service_role key (used by backend)
+-- 8. Allow full access via service_role key (used by backend)
 CREATE POLICY "Allow all for service role" ON tenants FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON masters FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON services FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON clients FOR ALL USING (true);
 CREATE POLICY "Allow all for service role" ON appointments FOR ALL USING (true);
+CREATE POLICY "Allow all for service role" ON promocodes FOR ALL USING (true);
