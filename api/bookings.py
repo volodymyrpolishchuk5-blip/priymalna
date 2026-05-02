@@ -1,9 +1,13 @@
-import json
+# Fix path robustly
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib import db
+import json
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
+from lib import db
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -60,6 +64,26 @@ class handler(BaseHTTPRequestHandler):
             elif action == "reschedule":
                 db.update_appointment_datetime(int(data.get("appt_id")), tenant_id, data.get("date"), data.get("time"))
                 self._json(200, {"status": "ok"})
+            elif action == "repeat_booking":
+                old_appt = db.get_appointment_by_id(int(data.get("appt_id")))
+                if old_appt:
+                    from datetime import datetime
+                    today = datetime.now().strftime("%Y-%m-%d")
+                    now_time = datetime.now().strftime("%H:%M")
+                    db.add_appointment(
+                        tenant_id,
+                        old_appt["master_id"],
+                        old_appt["client_id"],
+                        old_appt["client_name"],
+                        old_appt["client_phone"],
+                        old_appt["service"],
+                        old_appt["price"],
+                        today,
+                        now_time
+                    )
+                    self._json(200, {"status": "ok"})
+                else:
+                    self._json(404, {"error": "Appointment not found"})
             else:
                 self._json(400, {"error": "invalid action"})
         except Exception as e:

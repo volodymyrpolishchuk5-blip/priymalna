@@ -526,8 +526,17 @@ async function saveReschedule(id) {
 }
 
 async function repeatBooking(id) {
-    alert("Функція 'Повторний запис' активна. Клієнт обраний автоматично.");
-    switchAdminTab('overview');
+    const tenantId = localStorage.getItem('tenant_id');
+    try {
+        const res = await fetch('/api/bookings', {
+            method: 'POST',
+            body: JSON.stringify({ action: "repeat_booking", tenant_id: tenantId, appt_id: id })
+        });
+        if (res.ok) {
+            alert("Повторний запис створено на сьогодні! Ви можете змінити час у вкладці 'Записи'.");
+            fetchBookings();
+        }
+    } catch (e) { console.error(e); }
 }
 
 function switchAdminTab(tab) {

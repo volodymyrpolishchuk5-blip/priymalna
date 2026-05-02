@@ -195,6 +195,11 @@ def update_appointment_status(appt_id: int, tenant_id: str, status: str):
     db = get_db()
     db.table("appointments").update({"status": status}).eq("id", appt_id).eq("tenant_id", tenant_id).execute()
 
+def get_appointment_by_id(appt_id: int):
+    db = get_db()
+    res = db.table("appointments").select("*").eq("id", appt_id).maybe_single().execute()
+    return res.data if res and getattr(res, "data", None) else None
+
 # ===================== STATS =====================
 
 def get_stats(tenant_id: str):
