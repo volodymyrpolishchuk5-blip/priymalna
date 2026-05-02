@@ -33,9 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchMasters(tenantId);
         }
         if (document.getElementById('admin-bookings')) {
-            // we fetch bookings when switching tabs, or if it's visible by default
             if (document.getElementById('admin-bookings').style.display === 'block') {
                 fetchBookings();
+            }
+        }
+        if (document.getElementById('admin-clients-tab')) {
+            if (document.getElementById('admin-clients-tab').style.display === 'block') {
+                fetchClients();
             }
         }
     }
@@ -166,11 +170,53 @@ async function fetchBookings() {
                         Майстер: <strong>${b.master || 'Будь-який'}</strong><br>
                         Статус: <strong>${b.status}</strong>
                     </div>
-                    ${b.status === 'active' ? `
+                    ${b.status === 'active' || b.status === 'waitlist' ? `
                     <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
                         <button class="action-btn" onclick="completeBooking('${b.id}')" style="padding: 8px; font-size: 12px; background: #e8f5e9; color: #2e7d32;">Виконано</button>
                         <button class="action-btn delete-btn" onclick="cancelBooking('${b.id}')" style="padding: 8px; font-size: 12px; margin-top: 0;">Скасувати</button>
                     </div>` : ''}
+                </div>`;
+        });
+    } catch (e) { console.error(e); }
+}
+
+async function fetchClients() {
+    const tenantId = localStorage.getItem('tenant_id');
+    const container = document.getElementById('admin-clients');
+    if (!container || !tenantId) return;
+    
+    container.innerHTML = '<p style="text-align:center; color:#777;">Завантаження...</p>';
+    try {
+        const response = await fetch(`/api/clients?tenant=${tenantId}`);
+        const clients = await response.json();
+        
+        container.innerHTML = '';
+        if (clients.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#777;">Немає клієнтів</p>';
+            return;
+        }
+        
+        clients.forEach(c => {
+            container.innerHTML += `
+                <div class="service-card" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
+                        <span style="font-weight: 800; font-size: 16px;">
+                            ${c.is_vip ? '👑 ' : ''}${c.name}
+                        </span>
+                        ${c.is_blacklisted ? '<span style="color: red; font-weight: bold;">ЧС</span>' : ''}
+                    </div>
+                    <div style="font-size: 14px; color: var(--text-secondary);">
+                        📞 ${c.phone}<br>
+                        📅 Доданий: ${new Date(c.created_at).toLocaleDateString()}
+                    </div>
+                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
+                        <button class="action-btn" onclick="updateClientStatus('${c.id}', ${!c.is_vip}, null)" style="padding: 8px; font-size: 12px; background: ${c.is_vip ? '#f5f5f5' : '#fff3e0'}; color: ${c.is_vip ? '#333' : '#e65100'};">
+                            ${c.is_vip ? 'Прибрати VIP' : 'Зробити VIP'}
+                        </button>
+                        <button class="action-btn" onclick="updateClientStatus('${c.id}', null, ${!c.is_blacklisted})" style="padding: 8px; font-size: 12px; background: ${c.is_blacklisted ? '#f5f5f5' : '#ffebee'}; color: ${c.is_blacklisted ? '#333' : '#c62828'};">
+                            ${c.is_blacklisted ? 'Відновити' : 'У Чорний список'}
+                        </button>
+                    </div>
                 </div>`;
         });
     } catch (e) { console.error(e); }
@@ -348,11 +394,27 @@ async function cancelBooking(id) {
     }
 }
 
+async function updateClientStatus(clientId, isVip, isBlacklisted) {
+    const tenantId = localStorage.getItem('tenant_id');
+    try {
+        const payload = { action: "update_status", tenant_id: tenantId, client_id: clientId };
+        if (isVip !== null) payload.is_vip = isVip;
+        if (isBlacklisted !== null) payload.is_blacklisted = isBlacklisted;
+        
+        const res = await fetch('/api/clients', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) fetchClients();
+    } catch (e) { console.error(e); }
+}
+
 function switchAdminTab(tab) {
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById('admin-overview').style.display = 'none';
     document.getElementById('admin-bookings').style.display = 'none';
     if(document.getElementById('admin-masters-tab')) document.getElementById('admin-masters-tab').style.display = 'none';
+    if(document.getElementById('admin-clients-tab')) document.getElementById('admin-clients-tab').style.display = 'none';
     
     if (tab === 'overview') {
         document.getElementById('admin-overview').style.display = 'block';
@@ -364,6 +426,10 @@ function switchAdminTab(tab) {
     } else if (tab === 'masters') {
         document.getElementById('admin-masters-tab').style.display = 'block';
         document.querySelectorAll('.nav-item')[2].classList.add('active');
+    } else if (tab === 'clients') {
+        document.getElementById('admin-clients-tab').style.display = 'block';
+        document.querySelectorAll('.nav-item')[3].classList.add('active');
+        fetchClients();
     }
 }
 

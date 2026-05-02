@@ -62,6 +62,40 @@ def delete_master(master_id: int, tenant_id: str):
     db = get_db()
     db.table("masters").delete().eq("id", master_id).eq("tenant_id", tenant_id).execute()
 
+# ===================== CLIENTS =====================
+
+def get_client_by_phone(tenant_id: str, phone: str):
+    db = get_db()
+    res = db.table("clients").select("*").eq("tenant_id", tenant_id).eq("phone", phone).maybe_single().execute()
+    return res.data if res and getattr(res, "data", None) else None
+
+def get_client_by_id(client_id: int):
+    db = get_db()
+    res = db.table("clients").select("*").eq("id", client_id).maybe_single().execute()
+    return res.data if res and getattr(res, "data", None) else None
+
+def create_client(tenant_id: str, name: str, phone: str):
+    db = get_db()
+    res = db.table("clients").insert({
+        "tenant_id": tenant_id,
+        "name": name,
+        "phone": phone
+    }).execute()
+    return res.data[0]["id"] if res.data else None
+
+def get_clients_by_tenant(tenant_id: str):
+    db = get_db()
+    res = db.table("clients").select("*").eq("tenant_id", tenant_id).execute()
+    return res.data or []
+
+def update_client_status(client_id: int, tenant_id: str, is_vip: bool = None, is_blacklisted: bool = None):
+    db = get_db()
+    update_data = {}
+    if is_vip is not None: update_data["is_vip"] = is_vip
+    if is_blacklisted is not None: update_data["is_blacklisted"] = is_blacklisted
+    if update_data:
+        db.table("clients").update(update_data).eq("id", client_id).eq("tenant_id", tenant_id).execute()
+
 # ===================== SERVICES =====================
 
 def add_service(tenant_id: str, name: str, price: int, duration: int = 60):
@@ -84,29 +118,31 @@ def delete_service(service_id: int, tenant_id: str):
 
 # ===================== APPOINTMENTS =====================
 
-def add_appointment(tenant_id, master_id, client_name, client_phone, service, date, time):
+def add_appointment(tenant_id, master_id, client_id, client_name, client_phone, service, date, time, status="active"):
     db = get_db()
     res = db.table("appointments").insert({
         "tenant_id": tenant_id,
         "master_id": master_id if master_id else None,
+        "client_id": client_id,
         "client_name": client_name,
         "client_phone": client_phone,
         "service": service,
         "date": date,
         "time": time,
-        "status": "active",
+        "status": status,
     }).execute()
     return res.data[0]["id"] if res.data else None
 
 def get_appointments_by_tenant(tenant_id: str):
     db = get_db()
     res = db.table("appointments").select(
-        "id, client_name, client_phone, service, date, time, status, masters(name)"
+        "id, client_id, client_name, client_phone, service, date, time, status, masters(name)"
     ).eq("tenant_id", tenant_id).order("date").order("time").execute()
     rows = []
     for r in (res.data or []):
         rows.append({
             "id": r["id"],
+            "client_id": r["client_id"],
             "name": r["client_name"],
             "phone": r["client_phone"],
             "service": r["service"],
@@ -116,6 +152,10 @@ def get_appointments_by_tenant(tenant_id: str):
             "master": r["masters"]["name"] if r.get("masters") else None,
         })
     return rows
+
+def update_appointment_datetime(appt_id: int, tenant_id: str, new_date: str, new_time: str):
+    db = get_db()
+    db.table("appointments").update({"date": new_date, "time": new_time}).eq("id", appt_id).eq("tenant_id", tenant_id).execute()
 
 def update_appointment_status(appt_id: int, tenant_id: str, status: str):
     db = get_db()

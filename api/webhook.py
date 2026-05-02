@@ -124,9 +124,19 @@ async def handle_webapp_data(message: types.Message, bot: Bot):
 
         elif action == "new_booking":
             master_id = data.get("master_id")
+            phone = data["phone"]
+            name = data["name"]
+            
+            # Find or create client
+            client = db.get_client_by_phone(tenant_id, phone)
+            if client:
+                client_id = client["id"]
+            else:
+                client_id = db.create_client(tenant_id, name, phone)
+
             appt_id = db.add_appointment(
-                tenant_id, int(master_id) if master_id else None,
-                data["name"], data["phone"], data["service"], data["date"], data["time"]
+                tenant_id, int(master_id) if master_id else None, client_id,
+                name, phone, data["service"], data["date"], data["time"]
             )
             await message.answer(
                 f"✅ **Запис прийнято!**\n\n"

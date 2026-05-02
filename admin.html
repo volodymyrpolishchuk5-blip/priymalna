@@ -46,10 +46,19 @@
         <button class="action-btn" onclick="addNewMaster()" style="background: #000; color: #fff; margin-top: 20px;">+ Додати майстра</button>
     </div>
 
-    <div class="nav-bar" style="grid-template-columns: repeat(3, 1fr);">
+    <!-- Секція 4: Клієнти -->
+    <div id="admin-clients-tab" style="display: none;">
+        <h2>База клієнтів</h2>
+        <div id="admin-clients" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Clients will be loaded here dynamically -->
+        </div>
+    </div>
+
+    <div class="nav-bar" style="grid-template-columns: repeat(4, 1fr);">
         <div class="nav-item active" onclick="switchAdminTab('overview')"><i>📈</i><br>Послуги</div>
         <div class="nav-item" onclick="switchAdminTab('bookings')"><i>📝</i><br>Записи</div>
         <div class="nav-item" onclick="switchAdminTab('masters')"><i>👥</i><br>Майстри</div>
+        <div class="nav-item" onclick="switchAdminTab('clients')"><i>👑</i><br>Клієнти</div>
     </div>
 
     <!-- Модальне вікно (Послуги) -->
