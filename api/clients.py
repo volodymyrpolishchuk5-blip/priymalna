@@ -57,6 +57,17 @@ class handler(BaseHTTPRequestHandler):
                     data.get("is_blacklisted")
                 )
                 self._json(200, {"status": "ok"})
+            elif action == "delete_client":
+                db.delete_client(int(data.get("client_id")), tenant_id)
+                self._json(200, {"status": "ok"})
+            elif action == "update_client":
+                db.update_client_data(
+                    int(data.get("client_id")),
+                    tenant_id,
+                    data.get("name"),
+                    data.get("phone")
+                )
+                self._json(200, {"status": "ok"})
             else:
                 self._json(400, {"error": "invalid action"})
         except Exception as e:

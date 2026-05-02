@@ -133,11 +133,21 @@ def get_clients_by_tenant(tenant_id: str):
 
 def update_client_status(client_id: int, tenant_id: str, is_vip: bool = None, is_blacklisted: bool = None):
     db = get_db()
-    update_data = {}
-    if is_vip is not None: update_data["is_vip"] = is_vip
-    if is_blacklisted is not None: update_data["is_blacklisted"] = is_blacklisted
-    if update_data:
-        db.table("clients").update(update_data).eq("id", client_id).eq("tenant_id", tenant_id).execute()
+    data = {}
+    if is_vip is not None: data["is_vip"] = is_vip
+    if is_blacklisted is not None: data["is_blacklisted"] = is_blacklisted
+    db.table("clients").update(data).eq("id", client_id).eq("tenant_id", tenant_id).execute()
+
+def delete_client(client_id: int, tenant_id: str):
+    db = get_db()
+    db.table("clients").delete().eq("id", client_id).eq("tenant_id", tenant_id).execute()
+
+def update_client_data(client_id: int, tenant_id: str, name: str, phone: str):
+    db = get_db()
+    db.table("clients").update({
+        "name": name,
+        "phone": phone
+    }).eq("id", client_id).eq("tenant_id", tenant_id).execute()
 
 # ===================== SERVICES =====================
 

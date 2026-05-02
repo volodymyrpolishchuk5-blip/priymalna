@@ -255,12 +255,17 @@ async function fetchClients() {
                         <button class="action-btn" onclick="updateClientStatus('${c.id}', ${!c.is_vip}, null)" style="padding: 8px; font-size: 12px; background: ${c.is_vip ? '#f5f5f5' : '#fff3e0'}; color: ${c.is_vip ? '#333' : '#e65100'};">
                             ${c.is_vip ? 'Прибрати VIP' : 'Зробити VIP'}
                         </button>
-                        <button class="action-btn" onclick="updateClientStatus('${c.id}', null, ${!c.is_blacklisted})" style="padding: 8px; font-size: 12px; background: ${c.is_blacklisted ? '#f5f5f5' : '#ffebee'}; color: ${c.is_blacklisted ? '#333' : '#c62828'};">
-                            ${c.is_blacklisted ? 'Відновити' : 'У Чорний список'}
+                        <button class="action-btn" onclick="updateClientStatus('${c.id}', null, ${!c.is_blacklisted})" style="padding: 8px; font-size: 12px; background: ${c.is_blacklisted ? '#f5f5f5' : '#ffebee'}; color: ${c.is_blacklisted ? '#333' : '#c62828'}; flex: 1;">
+                            ${c.is_blacklisted ? 'Відновити' : 'У ЧС'}
                         </button>
                     </div>
+                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 5px;">
+                        <button class="action-btn" onclick="editClient('${c.id}', '${c.name}', '${c.phone}')" style="padding: 8px; font-size: 12px; background: #f5f5f5; color: #333; flex: 1;">Редагувати</button>
+                        <button class="action-btn delete-btn" onclick="deleteClientRecord('${c.id}', '${c.name}')" style="padding: 8px; font-size: 12px; margin-top:0; flex: 1;">Видалити</button>
+                    </div>
                 </div>`;
-        });
+            });
+        }
     } catch (e) { console.error(e); }
 }
 
@@ -498,6 +503,60 @@ async function updateClientStatus(clientId, isVip, isBlacklisted) {
         });
         if (res.ok) fetchClients();
     } catch (e) { console.error(e); }
+}
+
+function editClient(id, name, phone) {
+    if (id.startsWith('fb_')) {
+        alert("Цей клієнт ще не збережений в базі. Створіть новий запис для нього, щоб він з'явився офіційно.");
+        return;
+    }
+    document.getElementById('edit-client-id').value = id;
+    document.getElementById('client-name-modal').value = name;
+    document.getElementById('client-phone-modal').value = phone;
+    document.getElementById('client-modal').style.display = 'flex';
+}
+
+function closeClientModal() {
+    document.getElementById('client-modal').style.display = 'none';
+}
+
+async function saveModalClient() {
+    const id = document.getElementById('edit-client-id').value;
+    const name = document.getElementById('client-name-modal').value;
+    const phone = document.getElementById('client-phone-modal').value;
+    const tenantId = localStorage.getItem('tenant_id');
+
+    try {
+        const res = await fetch('/api/clients', {
+            method: 'POST',
+            body: JSON.stringify({ action: "update_client", tenant_id: tenantId, client_id: id, name: name, phone: phone })
+        });
+        if (res.ok) {
+            closeClientModal();
+            fetchClients();
+            showToast("Дані клієнта оновлено!");
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function deleteClientRecord(id, name) {
+    if (id.startsWith('fb_')) {
+        alert("Цей запис тимчасовий і не може бути видалений окремо.");
+        return;
+    }
+    const tenantId = localStorage.getItem('tenant_id');
+    if (confirm(`Видалити клієнта "${name}" з бази?`)) {
+        try {
+            const res = await fetch('/api/clients', {
+                method: 'POST',
+                body: JSON.stringify({ action: "delete_client", tenant_id: tenantId, client_id: id })
+            });
+            if (res.ok) {
+                fetchClients();
+                showToast("Клієнта видалено");
+            }
+        } catch (e) { console.error(e); }
+    }
 }
 
 function openRescheduleModal(id) {
