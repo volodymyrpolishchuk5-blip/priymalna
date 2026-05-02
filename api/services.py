@@ -46,6 +46,15 @@ class handler(BaseHTTPRequestHandler):
             elif action == "delete_service":
                 db.delete_service(int(data.get("service_id")), tenant_id)
                 self._json(200, {"status": "ok"})
+            elif action == "update_service":
+                db.update_service(
+                    int(data.get("service_id")), 
+                    tenant_id, 
+                    data.get("name"), 
+                    int(data.get("price", 0)), 
+                    int(data.get("duration", 60))
+                )
+                self._json(200, {"status": "ok"})
             else:
                 self._json(400, {"error": "invalid action"})
         except Exception as e:

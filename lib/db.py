@@ -126,6 +126,14 @@ def delete_service(service_id: int, tenant_id: str):
     db = get_db()
     db.table("services").delete().eq("id", service_id).eq("tenant_id", tenant_id).execute()
 
+def update_service(service_id: int, tenant_id: str, name: str, price: int, duration: int):
+    db = get_db()
+    db.table("services").update({
+        "name": name,
+        "price": price,
+        "duration": duration
+    }).eq("id", service_id).eq("tenant_id", tenant_id).execute()
+
 # ===================== APPOINTMENTS =====================
 
 def add_appointment(tenant_id, master_id, client_id, client_name, client_phone, service, price, date, time, status="active"):

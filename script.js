@@ -99,7 +99,7 @@ async function fetchServices(tenantId) {
                             <span class="meta">${s.price} ₴ • ${s.duration} хв</span>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <!-- <button class="price-tag" onclick="editService('${s.id}', '${s.name}', ${s.price}, ${s.duration})" style="border:none; cursor:pointer;">Edit</button> -->
+                            <button class="price-tag" onclick="editService('${s.id}', '${s.name}', ${s.price}, ${s.duration})" style="border:none; cursor:pointer; background: #f5f5f5; color: #333;">Ред.</button>
                             <button class="price-tag delete-btn" onclick="deleteService('${s.id}', '${s.name}')" style="border:none; cursor:pointer;">Видалити</button>
                         </div>
                     </div>`;
@@ -294,9 +294,19 @@ function finishBooking() {
 
 function addNewService() {
     document.getElementById('modal-title').innerText = 'Додати послугу';
+    document.getElementById('edit-service-id').value = '';
     document.getElementById('modal-name').value = '';
     document.getElementById('modal-price').value = '';
     document.getElementById('modal-duration').value = '60';
+    document.getElementById('service-modal').style.display = 'flex';
+}
+
+function editService(id, name, price, duration) {
+    document.getElementById('modal-title').innerText = 'Редагувати послугу';
+    document.getElementById('edit-service-id').value = id;
+    document.getElementById('modal-name').value = name;
+    document.getElementById('modal-price').value = price;
+    document.getElementById('modal-duration').value = duration;
     document.getElementById('service-modal').style.display = 'flex';
 }
 
@@ -305,10 +315,12 @@ function closeModal() {
 }
 
 async function saveModalService() {
+    const id = document.getElementById('edit-service-id').value;
     const name = document.getElementById('modal-name').value;
     const price = document.getElementById('modal-price').value;
     const duration = document.getElementById('modal-duration').value;
     const tenantId = localStorage.getItem('tenant_id');
+    const user = tg.initDataUnsafe.user;
 
     if (!name || !price) {
         alert("Заповніть назву та ціну!");
@@ -316,15 +328,19 @@ async function saveModalService() {
     }
 
     try {
+        const payload = {
+            action: id ? "update_service" : "add_service",
+            tenant_id: tenantId,
+            user_id: user ? user.id : null,
+            name: name,
+            price: price,
+            duration: duration
+        };
+        if (id) payload.service_id = id;
+
         const res = await fetch('/api/services', {
             method: 'POST',
-            body: JSON.stringify({
-                action: "add_service",
-                tenant_id: tenantId,
-                name: name,
-                price: price,
-                duration: duration
-            })
+            body: JSON.stringify(payload)
         });
         if (res.ok) {
             closeModal();
