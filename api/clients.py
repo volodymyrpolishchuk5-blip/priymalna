@@ -31,7 +31,12 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             clients = db.get_clients_by_tenant(tenant_id)
-            self._json(200, clients)
+            # Debug: Return tenant_id and count to see what's happening
+            self._json(200, {
+                "tenant_id_searched": tenant_id,
+                "count": len(clients),
+                "clients": clients
+            })
         except Exception as e:
             import traceback
             self._json(500, {"error": str(e), "trace": traceback.format_exc()})

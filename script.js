@@ -227,11 +227,14 @@ async function fetchClients() {
     container.innerHTML = '<p style="text-align:center; color:#777;">Завантаження...</p>';
     try {
         const response = await fetch(`/api/clients?tenant=${tenantId}`);
-        const clients = await response.json();
+        const data = await response.json();
+        
+        // Handle both old array format and new object format for safety
+        const clients = Array.isArray(data) ? data : (data.clients || []);
         
         container.innerHTML = '';
         if (clients.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#777;">Немає клієнтів</p>';
+            container.innerHTML = `<p style="text-align:center; color:#777;">Немає клієнтів<br><small style="opacity:0.5">ID: ${data.tenant_id_searched || tenantId}</small></p>`;
             return;
         }
         
