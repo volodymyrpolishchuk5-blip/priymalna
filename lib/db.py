@@ -30,12 +30,12 @@ def create_tenant(owner_telegram_id: int, business_name: str) -> str:
 def get_tenant_by_owner(owner_telegram_id: int):
     db = get_db()
     res = db.table("tenants").select("*").eq("owner_telegram_id", owner_telegram_id).maybe_single().execute()
-    return res.data if res.data else None
+    return res.data if res and getattr(res, "data", None) else None
 
 def get_tenant_by_id(tenant_id: str):
     db = get_db()
     res = db.table("tenants").select("*").eq("id", tenant_id).maybe_single().execute()
-    return res.data if res.data else None
+    return res.data if res and getattr(res, "data", None) else None
 
 # ===================== MASTERS =====================
 
@@ -56,7 +56,7 @@ def get_masters_by_tenant(tenant_id: str):
 def get_master_by_id(master_id: int):
     db = get_db()
     res = db.table("masters").select("*").eq("id", master_id).maybe_single().execute()
-    return res.data if res.data else None
+    return res.data if res and getattr(res, "data", None) else None
 
 def delete_master(master_id: int, tenant_id: str):
     db = get_db()
