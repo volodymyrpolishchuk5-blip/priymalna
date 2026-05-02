@@ -21,6 +21,25 @@ class handler(BaseHTTPRequestHandler):
         masters = db.get_masters_by_tenant(tenant_id)
         self._json(200, masters)
 
+    def do_POST(self):
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body)
+            action = data.get("action")
+            tenant_id = data.get("tenant_id")
+
+            if action == "add_master":
+                db.add_master(tenant_id, data.get("name"), data.get("specialty"), data.get("telegram_id"))
+                self._json(200, {"status": "ok"})
+            elif action == "delete_master":
+                db.delete_master(int(data.get("master_id")), tenant_id)
+                self._json(200, {"status": "ok"})
+            else:
+                self._json(400, {"error": "invalid action"})
+        except Exception as e:
+            self._json(500, {"error": str(e)})
+
     def _json(self, code, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(code)

@@ -231,7 +231,7 @@ function closeModal() {
     document.getElementById('service-modal').style.display = 'none';
 }
 
-function saveModalService() {
+async function saveModalService() {
     const name = document.getElementById('modal-name').value;
     const price = document.getElementById('modal-price').value;
     const duration = document.getElementById('modal-duration').value;
@@ -242,21 +242,34 @@ function saveModalService() {
         return;
     }
 
-    tg.sendData(JSON.stringify({
-        action: "add_service",
-        tenant_id: tenantId,
-        name: name,
-        price: price,
-        duration: duration
-    }));
-    tg.close();
+    try {
+        const res = await fetch('/api/services', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: "add_service",
+                tenant_id: tenantId,
+                name: name,
+                price: price,
+                duration: duration
+            })
+        });
+        if (res.ok) {
+            closeModal();
+            fetchServices(tenantId);
+        }
+    } catch (e) { console.error(e); }
 }
 
-function deleteService(id, name) {
+async function deleteService(id, name) {
     const tenantId = localStorage.getItem('tenant_id');
     if (confirm(`Видалити послугу "${name}"?`)) {
-        tg.sendData(JSON.stringify({ action: "delete_service", tenant_id: tenantId, service_id: id }));
-        tg.close();
+        try {
+            const res = await fetch('/api/services', {
+                method: 'POST',
+                body: JSON.stringify({ action: "delete_service", tenant_id: tenantId, service_id: id })
+            });
+            if (res.ok) fetchServices(tenantId);
+        } catch (e) { console.error(e); }
     }
 }
 
@@ -269,7 +282,7 @@ function closeMasterModal() {
     document.getElementById('master-modal').style.display = 'none';
 }
 
-function saveModalMaster() {
+async function saveModalMaster() {
     const name = document.getElementById('master-name').value;
     const specialty = document.getElementById('master-specialty').value;
     const tgId = document.getElementById('master-tg-id').value;
@@ -280,33 +293,58 @@ function saveModalMaster() {
         return;
     }
 
-    tg.sendData(JSON.stringify({
-        action: "add_master",
-        tenant_id: tenantId,
-        name: name,
-        specialty: specialty,
-        telegram_id: tgId || null
-    }));
-    tg.close();
+    try {
+        const res = await fetch('/api/masters', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: "add_master",
+                tenant_id: tenantId,
+                name: name,
+                specialty: specialty,
+                telegram_id: tgId || null
+            })
+        });
+        if (res.ok) {
+            closeMasterModal();
+            fetchMasters(tenantId);
+        }
+    } catch (e) { console.error(e); }
 }
 
-function deleteMaster(id, name) {
+async function deleteMaster(id, name) {
     const tenantId = localStorage.getItem('tenant_id');
     if (confirm(`Видалити майстра "${name}"?`)) {
-        tg.sendData(JSON.stringify({ action: "delete_master", tenant_id: tenantId, master_id: id }));
-        tg.close();
+        try {
+            const res = await fetch('/api/masters', {
+                method: 'POST',
+                body: JSON.stringify({ action: "delete_master", tenant_id: tenantId, master_id: id })
+            });
+            if (res.ok) fetchMasters(tenantId);
+        } catch (e) { console.error(e); }
     }
 }
 
-function completeBooking(id) {
+async function completeBooking(id) {
     const tenantId = localStorage.getItem('tenant_id');
-    tg.sendData(JSON.stringify({ action: "complete_booking", tenant_id: tenantId, appt_id: id }));
+    try {
+        const res = await fetch('/api/bookings', {
+            method: 'POST',
+            body: JSON.stringify({ action: "complete_booking", tenant_id: tenantId, appt_id: id })
+        });
+        if (res.ok) fetchBookings();
+    } catch (e) { console.error(e); }
 }
 
-function cancelBooking(id) {
+async function cancelBooking(id) {
     const tenantId = localStorage.getItem('tenant_id');
     if (confirm(`Скасувати запис?`)) {
-        tg.sendData(JSON.stringify({ action: "cancel_booking", tenant_id: tenantId, appt_id: id }));
+        try {
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                body: JSON.stringify({ action: "cancel_booking", tenant_id: tenantId, appt_id: id })
+            });
+            if (res.ok) fetchBookings();
+        } catch (e) { console.error(e); }
     }
 }
 

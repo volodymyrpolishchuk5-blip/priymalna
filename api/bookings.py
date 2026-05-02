@@ -27,6 +27,23 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
         self.end_headers()
 
+    def do_POST(self):
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body)
+            action = data.get("action")
+            tenant_id = data.get("tenant_id")
+
+            if action in ("complete_booking", "cancel_booking"):
+                status = "виконано" if action == "complete_booking" else "скасовано"
+                db.update_appointment_status(int(data.get("appt_id")), tenant_id, status)
+                self._json(200, {"status": "ok"})
+            else:
+                self._json(400, {"error": "invalid action"})
+        except Exception as e:
+            self._json(500, {"error": str(e)})
+
     def _json(self, code, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
