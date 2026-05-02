@@ -95,10 +95,18 @@ class handler(BaseHTTPRequestHandler):
             finally:
                 await bot.session.close()
         
-        asyncio.run(main())
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"ok")
+        try:
+            asyncio.run(main())
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"ok")
+        except Exception as e:
+            import traceback
+            err = f"RUNTIME ERROR: {str(e)}\n{traceback.format_exc()}"
+            logging.error(err)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(err.encode("utf-8"))
 
     def do_GET(self):
         self.send_response(200)
