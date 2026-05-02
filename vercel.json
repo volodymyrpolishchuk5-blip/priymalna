@@ -8,11 +8,5 @@
     { "source": "/api/clients", "destination": "/api/clients.py" },
     { "source": "/api/stats", "destination": "/api/stats.py" },
     { "source": "/api/promocodes", "destination": "/api/promocodes.py" }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/reminders",
-      "schedule": "0 * * * *"
-    }
   ]
 }
