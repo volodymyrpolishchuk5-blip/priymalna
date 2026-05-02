@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Ваші дані</h2>
+        <span style="color: var(--text-secondary); font-size: 14px;">4/4</span>
+    </div>
+
+    <div class="input-group">
+        <label>Як до вас звертатися?</label>
+        <input type="text" class="input-field" placeholder="Ваше ім'я">
+    </div>
+
+    <div class="input-group">
+        <label>Номер телефону</label>
+        <input type="tel" class="input-field" placeholder="+380">
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-item"><span>Послуга:</span> <strong>Манікюр</strong></div>
+        <div class="summary-item"><span>Майстер:</span> <strong>Анна</strong></div>
+        <div class="summary-item"><span>Дата:</span> <strong>12 травня</strong></div>
+        <div class="summary-item"><span>Час:</span> <strong>14:00</strong></div>
+    </div>
+
+    <button class="next-btn" onclick="finishBooking()" style="position: relative; bottom: auto; margin-top: 20px;">Підтвердити запис</button>
+    <div class="nav-bar">
+        <div class="nav-item" onclick="location.href='index.html'"><i>🔘</i><br>Послуги</div>
+        <div class="nav-item" onclick="location.href='masters.html'"><i>👥</i><br>Майстри</div>
+        <div class="nav-item active" onclick="location.href='calendar.html'"><i>📅</i><br>Запис</div>
+        <div class="nav-item" onclick="location.href='profile.html'"><i>👤</i><br>Профіль</div>
+    </div>
+</body>
+</html>

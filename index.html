@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <h2>Оберіть послугу</h2>
+
+    <div id="services">
+        <!-- Services will be loaded here dynamically -->
+    </div>
+    
+    <button class="next-btn" onclick="saveServiceAndNext()">Обрати дату та час</button>
+
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="location.href='index.html'"><i>🔘</i><br>Послуги</div>
+        <div class="nav-item" onclick="location.href='masters.html'"><i>👥</i><br>Майстри</div>
+        <div class="nav-item" onclick="location.href='calendar.html'"><i>📅</i><br>Запис</div>
+        <div class="nav-item" onclick="location.href='profile.html'"><i>👤</i><br>Профіль</div>
+    </div>
+</body>
+</html>

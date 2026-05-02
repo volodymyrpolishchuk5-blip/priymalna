@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/webhook", "destination": "/api/webhook.py" },
+    { "source": "/api/services", "destination": "/api/services.py" },
+    { "source": "/api/masters", "destination": "/api/masters.py" },
+    { "source": "/api/bookings", "destination": "/api/bookings.py" }
+  ]
+}
