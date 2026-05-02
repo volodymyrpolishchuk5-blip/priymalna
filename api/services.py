@@ -11,16 +11,20 @@ from urllib.parse import urlparse, parse_qs
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        parsed = urlparse(self.path)
-        params = parse_qs(parsed.query)
-        tenant_id = params.get("tenant", [None])[0]
+        try:
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            tenant_id = params.get("tenant", [None])[0]
 
-        if not tenant_id:
-            self._json(400, {"error": "tenant parameter required"})
-            return
+            if not tenant_id:
+                self._json(400, {"error": "tenant parameter required"})
+                return
 
-        services = db.get_services_by_tenant(tenant_id)
-        self._json(200, services)
+            services = db.get_services_by_tenant(tenant_id)
+            self._json(200, services)
+        except Exception as e:
+            import traceback
+            self._json(500, {"error": str(e), "trace": traceback.format_exc()})
 
     def _json(self, code, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
