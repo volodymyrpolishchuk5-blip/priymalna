@@ -72,9 +72,7 @@ async def start_command(message: types.Message, command: CommandObject, bot: Bot
 # Catch-all handler for debugging
 @dp.message()
 async def echo_all(message: types.Message):
-    if message.text == "/start":
-         return # Should be handled by start_command
-    await message.answer(f"Отримав повідомлення: {message.text}")
+    await message.answer(f"DEBUG: Отримав: {message.text}")
 
 @dp.message(F.text & ~F.text.startswith("/"))
 async def handle_registration(message: types.Message):
