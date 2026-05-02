@@ -4,6 +4,7 @@ import sys
 import logging
 
 # Add project root to path so we can import lib.db
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib import db
 
 from http.server import BaseHTTPRequestHandler

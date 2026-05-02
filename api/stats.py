@@ -1,5 +1,7 @@
 import json
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from lib import db
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
