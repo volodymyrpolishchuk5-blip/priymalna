@@ -23,14 +23,16 @@ dp = Dispatcher()
 # ===================== HANDLERS =====================
 
 @dp.message(CommandStart())
-async def start_command(message: types.Message, command: CommandObject, bot: Bot):
+async def start_command(message: types.Message, command: CommandObject, bot: Bot = None):
+    # If bot is not injected, use message.bot
+    current_bot = bot or message.bot
     args = command.args
     if args:
         # Client flow: deep-linked to a specific tenant
         tenant_id = args
         tenant = db.get_tenant_by_id(tenant_id)
         if not tenant:
-            await message.answer("❌ Бізнес не знайдено. Перевірте посилання.")
+            await message.answer("❌ Бізнес не знайдено.")
             return
         client_url = f"{WEBAPP_URL}/index.html?tenant={tenant_id}"
         markup = ReplyKeyboardMarkup(
@@ -41,9 +43,8 @@ async def start_command(message: types.Message, command: CommandObject, bot: Bot
             resize_keyboard=True
         )
         await message.answer(
-            f"👋 Вітаємо у **{tenant['business_name']}**!\n\n"
-            "Натисніть кнопку нижче, щоб обрати послугу та час:",
-            reply_markup=markup, parse_mode="Markdown"
+            f"👋 Вітаємо у {tenant['business_name']}!\nОберіть послугу:",
+            reply_markup=markup
         )
     else:
         # Owner flow
@@ -52,7 +53,7 @@ async def start_command(message: types.Message, command: CommandObject, bot: Bot
         if tenant:
             tenant_id = tenant["id"]
             admin_url = f"{WEBAPP_URL}/admin.html?tenant={tenant_id}&admin=1"
-            bot_info = await bot.get_me()
+            bot_info = await current_bot.get_me()
             client_link = f"https://t.me/{bot_info.username}?start={tenant_id}"
             markup = ReplyKeyboardMarkup(
                 keyboard=[[KeyboardButton(
@@ -62,18 +63,18 @@ async def start_command(message: types.Message, command: CommandObject, bot: Bot
                 resize_keyboard=True
             )
             await message.answer(
-                f"🏢 **Ваш бізнес:** {tenant['business_name']}\n\n"
-                f"🔗 **Посилання для клієнтів:**\n`{client_link}`\n\n"
-                "Надішліть це посилання своїм клієнтам, щоб вони могли записатися.",
-                reply_markup=markup, parse_mode="Markdown"
+                f"🏢 Бізнес: {tenant['business_name']}\n🔗 Клієнтське посилання:\n{client_link}",
+                reply_markup=markup
             )
         else:
-            await message.answer(
-                "👋 Вітаємо! Ви можете створити власний кабінет для записів клієнтів.\n\n"
-                "Щоб зареєструвати бізнес, просто **напишіть його назву** у цей чат.\n"
-                "Наприклад: `Студія краси Beauty`",
-                parse_mode="Markdown"
-            )
+            await message.answer("👋 Напишіть назву вашого бізнесу, щоб зареєструватися.")
+
+# Catch-all handler for debugging
+@dp.message()
+async def echo_all(message: types.Message):
+    if message.text == "/start":
+         return # Should be handled by start_command
+    await message.answer(f"Отримав повідомлення: {message.text}")
 
 @dp.message(F.text & ~F.text.startswith("/"))
 async def handle_registration(message: types.Message):
