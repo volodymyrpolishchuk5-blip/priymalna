@@ -28,6 +28,9 @@ h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s ease;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: 10px;
+    overflow: hidden; /* Prevent child overflow */
 }
 
 .service-card:active {
@@ -35,8 +38,14 @@ h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2
     border-color: var(--accent-color);
 }
 
-.service-info .name { font-weight: 700; font-size: 17px; display: block; }
+.service-info {
+    flex: 1;
+    min-width: 0; /* Important for text wrapping in flexbox */
+}
+
+.service-info .name { font-weight: 700; font-size: 17px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .service-info .meta { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+.copy-hint { word-break: break-all; display: inline-block; max-width: 100%; }
 
 .price-tag {
     background: var(--accent-color);

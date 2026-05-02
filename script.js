@@ -134,22 +134,22 @@ async function fetchMasters(tenantId) {
             masters.forEach(m => {
                 const tgIdDisplay = m.telegram_id || 'Немає';
                 adminContainer.innerHTML += `
-                    <div class="service-card master-card" style="padding: 15px;">
-                        <div style="display: flex; align-items: center; width: 100%; gap: 15px;">
-                            <div style="width: 45px; height: 45px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">👤</div>
-                            <div class="service-info" style="flex-grow: 1;">
-                                <span class="name" style="font-size: 16px; font-weight: 800;">${m.name}</span>
-                                <span class="meta" style="color: #777;">${m.specialty} • ${m.commission_rate}% ставка</span>
-                                <div style="margin-top: 5px;">
-                                    <span class="copy-hint" onclick="copyToClipboard('${tgIdDisplay}')" style="font-size: 11px; background: #e3f2fd; color: #1565c0; padding: 3px 8px; border-radius: 5px; cursor: pointer;">
-                                        🆔 ${tgIdDisplay} (натисніть щоб копіювати)
-                                    </span>
-                                </div>
+                    <div class="service-card master-card" style="padding: 15px; display: block;">
+                        <div style="display: flex; align-items: center; width: 100%; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">👤</div>
+                            <div class="service-info" style="min-width: 0;">
+                                <span class="name" style="font-size: 16px; font-weight: 800; white-space: normal;">${m.name}</span>
+                                <span class="meta" style="color: #777; display: block;">${m.specialty} • ${m.commission_rate}%</span>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px; margin-top: 15px; width: 100%;">
-                            <button class="action-btn" onclick="editMaster('${m.id}', '${m.name}', '${m.specialty}', '${m.telegram_id || ''}', ${m.commission_rate})" style="flex: 1; padding: 8px; background: #f5f5f5; color: #333; font-size: 12px;">Редагувати</button>
-                            <button class="action-btn delete-btn" onclick="deleteMaster('${m.id}', '${m.name}')" style="flex: 1; padding: 8px; font-size: 12px; margin-top: 0;">Видалити</button>
+                        <div style="margin-bottom: 12px;">
+                            <span class="copy-hint" onclick="copyToClipboard('${tgIdDisplay}')" style="font-size: 11px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: inline-block;">
+                                🆔 ${tgIdDisplay}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button class="action-btn" onclick="editMaster('${m.id}', '${m.name}', '${m.specialty}', '${m.telegram_id || ''}', ${m.commission_rate})" style="flex: 1; padding: 10px; background: #f5f5f5; color: #333; font-size: 12px; margin-top: 0;">Редагувати</button>
+                            <button class="action-btn delete-btn" onclick="deleteMaster('${m.id}', '${m.name}')" style="flex: 1; padding: 10px; font-size: 12px; margin-top: 0;">Видалити</button>
                         </div>
                     </div>`;
             });
