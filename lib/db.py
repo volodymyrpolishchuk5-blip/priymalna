@@ -84,7 +84,7 @@ def get_client_by_id(client_id: int):
     res = db.table("clients").select("*").eq("id", client_id).maybe_single().execute()
     return res.data if res and getattr(res, "data", None) else None
 
-def create_client(tenant_id: str, name: str, phone: str):
+def create_db_client(tenant_id: str, name: str, phone: str):
     db = get_db()
     res = db.table("clients").insert({
         "tenant_id": tenant_id,

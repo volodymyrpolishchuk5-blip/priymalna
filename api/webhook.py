@@ -71,7 +71,7 @@ async def web_data_handler(message: types.Message, bot: Bot):
             phone = data["phone"]
             name = data["name"]
             client = db.get_client_by_phone(tenant_id, phone) or {}
-            client_id = client.get("id") or db.create_client(tenant_id, name, phone)
+            client_id = client.get("id") or db.create_db_client(tenant_id, name, phone)
             
             db.add_appointment(tenant_id, data.get("master_id"), client_id, name, phone, data["service"], 0, data["date"], data["time"])
             await message.answer(f"✅ Запис {data['date']} {data['time']} прийнято!")
