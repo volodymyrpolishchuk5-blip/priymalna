@@ -265,7 +265,6 @@ async function fetchClients() {
                     </div>
                 </div>`;
             });
-        }
     } catch (e) { console.error(e); }
 }
 
