@@ -1,6 +1,8 @@
 import os
 from supabase import create_client, Client
 
+_client: Client = None
+
 def get_db() -> Client:
     global _client
     if _client is None:
