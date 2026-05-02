@@ -110,7 +110,13 @@ async def handle_webapp_data(message: types.Message, bot: Bot):
             await message.answer("❌ Послугу видалено.")
 
         elif action == "add_master":
-            db.add_master(tenant_id, data.get("name"), data.get("specialty"), data.get("telegram_id"))
+            db.add_master(
+                tenant_id, 
+                data.get("name"), 
+                data.get("specialty"), 
+                data.get("telegram_id"),
+                int(data.get("commission_rate", 50))
+            )
             await message.answer(f"✅ Майстра **{data.get('name')}** додано!", parse_mode="Markdown")
 
         elif action == "delete_master":
@@ -200,11 +206,17 @@ class handler(BaseHTTPRequestHandler):
             body = self.rfile.read(content_length)
 
             async def process():
+                if not BOT_TOKEN:
+                    logging.error("BOT_TOKEN is missing!")
+                    return
                 # Initialize bot inside the current event loop
                 bot = Bot(token=BOT_TOKEN)
                 try:
                     update = types.Update.model_validate_json(body)
                     await dp.feed_update(bot=bot, update=update)
+                except Exception as e:
+                    logging.error(f"Error feeding update: {e}")
+                    raise e
                 finally:
                     await bot.session.close()
 
@@ -214,11 +226,11 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(b"ok")
         except Exception as e:
             import traceback
-            body = json.dumps({"error": str(e), "trace": traceback.format_exc()}).encode("utf-8")
-            self.send_response(500)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
+            err_msg = f"Webhook Error: {str(e)}\n{traceback.format_exc()}"
+            logging.error(err_msg)
+            self.send_response(200) # Still return 200 to Telegram to stop retries, but we logged it
             self.end_headers()
-            self.wfile.write(body)
+            self.wfile.write(err_msg.encode("utf-8"))
 
     def do_GET(self):
         self.send_response(200)
