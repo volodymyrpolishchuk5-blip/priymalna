@@ -72,6 +72,15 @@ def delete_master(master_id: int, tenant_id: str):
     db = get_db()
     db.table("masters").delete().eq("id", master_id).eq("tenant_id", tenant_id).execute()
 
+def update_master(master_id: int, tenant_id: str, name: str, specialty: str, telegram_id: str, commission_rate: int):
+    db = get_db()
+    db.table("masters").update({
+        "name": name,
+        "specialty": specialty,
+        "telegram_id": telegram_id,
+        "commission_rate": commission_rate
+    }).eq("id", master_id).eq("tenant_id", tenant_id).execute()
+
 # ===================== CLIENTS =====================
 
 def get_client_by_phone(tenant_id: str, phone: str):

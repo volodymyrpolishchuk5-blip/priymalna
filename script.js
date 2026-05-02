@@ -132,13 +132,25 @@ async function fetchMasters(tenantId) {
         if (adminContainer) {
             adminContainer.innerHTML = '';
             masters.forEach(m => {
+                const tgIdDisplay = m.telegram_id || 'Немає';
                 adminContainer.innerHTML += `
-                    <div class="service-card master-card">
-                        <div class="service-info" style="flex-grow: 1;">
-                            <span class="name">${m.name}</span>
-                            <span class="meta">${m.specialty} | TG: ${m.telegram_id || 'Немає'}</span>
+                    <div class="service-card master-card" style="padding: 15px;">
+                        <div style="display: flex; align-items: center; width: 100%; gap: 15px;">
+                            <div style="width: 45px; height: 45px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">👤</div>
+                            <div class="service-info" style="flex-grow: 1;">
+                                <span class="name" style="font-size: 16px; font-weight: 800;">${m.name}</span>
+                                <span class="meta" style="color: #777;">${m.specialty} • ${m.commission_rate}% ставка</span>
+                                <div style="margin-top: 5px;">
+                                    <span class="copy-hint" onclick="copyToClipboard('${tgIdDisplay}')" style="font-size: 11px; background: #e3f2fd; color: #1565c0; padding: 3px 8px; border-radius: 5px; cursor: pointer;">
+                                        🆔 ${tgIdDisplay} (натисніть щоб копіювати)
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <button class="price-tag delete-btn" onclick="deleteMaster('${m.id}', '${m.name}')" style="border:none; cursor:pointer;">Видалити</button>
+                        <div style="display: flex; gap: 8px; margin-top: 15px; width: 100%;">
+                            <button class="action-btn" onclick="editMaster('${m.id}', '${m.name}', '${m.specialty}', '${m.telegram_id || ''}', ${m.commission_rate})" style="flex: 1; padding: 8px; background: #f5f5f5; color: #333; font-size: 12px;">Редагувати</button>
+                            <button class="action-btn delete-btn" onclick="deleteMaster('${m.id}', '${m.name}')" style="flex: 1; padding: 8px; font-size: 12px; margin-top: 0;">Видалити</button>
+                        </div>
                     </div>`;
             });
         }
@@ -364,6 +376,22 @@ async function deleteService(id, name) {
 
 // Masters modal logic
 function addNewMaster() {
+    document.getElementById('master-modal-title').innerText = 'Додати майстра';
+    document.getElementById('edit-master-id').value = '';
+    document.getElementById('master-name').value = '';
+    document.getElementById('master-specialty').value = '';
+    document.getElementById('master-tg-id').value = '';
+    document.getElementById('master-commission').value = '50';
+    document.getElementById('master-modal').style.display = 'flex';
+}
+
+function editMaster(id, name, specialty, tgId, commission) {
+    document.getElementById('master-modal-title').innerText = 'Редагувати майстра';
+    document.getElementById('edit-master-id').value = id;
+    document.getElementById('master-name').value = name;
+    document.getElementById('master-specialty').value = specialty;
+    document.getElementById('master-tg-id').value = tgId;
+    document.getElementById('master-commission').value = commission;
     document.getElementById('master-modal').style.display = 'flex';
 }
 
@@ -372,6 +400,7 @@ function closeMasterModal() {
 }
 
 async function saveModalMaster() {
+    const id = document.getElementById('edit-master-id').value;
     const name = document.getElementById('master-name').value;
     const specialty = document.getElementById('master-specialty').value;
     const tgId = document.getElementById('master-tg-id').value;
@@ -385,17 +414,20 @@ async function saveModalMaster() {
     }
 
     try {
+        const payload = {
+            action: id ? "update_master" : "add_master",
+            tenant_id: tenantId,
+            user_id: user ? user.id : null,
+            name: name,
+            specialty: specialty,
+            telegram_id: tgId || null,
+            commission_rate: commission
+        };
+        if (id) payload.master_id = id;
+
         const res = await fetch('/api/masters', {
             method: 'POST',
-            body: JSON.stringify({
-                action: "add_master",
-                tenant_id: tenantId,
-                user_id: user ? user.id : null,
-                name: name,
-                specialty: specialty,
-                telegram_id: tgId || null,
-                commission_rate: commission
-            })
+            body: JSON.stringify(payload)
         });
         if (res.ok) {
             closeMasterModal();
@@ -562,4 +594,20 @@ function renderTimes() {
         container.appendChild(item);
         if (i === 5) localStorage.setItem('selectedTime', t);
     });
+}
+
+function copyToClipboard(text) {
+    if (text === 'Немає') return;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Копійовано: " + text);
+    });
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 2000);
 }
