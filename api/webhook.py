@@ -4,8 +4,7 @@ import sys
 import logging
 
 # Add project root to path so we can import lib.db
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import lib.db as db
+from lib import db
 
 from http.server import BaseHTTPRequestHandler
 from aiogram import Bot, Dispatcher, types, F

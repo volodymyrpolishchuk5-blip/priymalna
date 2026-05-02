@@ -2,8 +2,7 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import lib.db as db
+from lib import db
 
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
