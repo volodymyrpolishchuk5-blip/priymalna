@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS masters (
     tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     specialty TEXT,
-    telegram_id BIGINT
+    telegram_id TEXT -- Може бути ID (число) або @username
 );
 
 -- 3. Services
