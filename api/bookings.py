@@ -57,6 +57,9 @@ class handler(BaseHTTPRequestHandler):
                 status = "виконано" if action == "complete_booking" else "скасовано"
                 db.update_appointment_status(int(data.get("appt_id")), tenant_id, status)
                 self._json(200, {"status": "ok"})
+            elif action == "reschedule":
+                db.update_appointment_datetime(int(data.get("appt_id")), tenant_id, data.get("date"), data.get("time"))
+                self._json(200, {"status": "ok"})
             else:
                 self._json(400, {"error": "invalid action"})
         except Exception as e:

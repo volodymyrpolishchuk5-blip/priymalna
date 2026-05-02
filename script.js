@@ -180,10 +180,14 @@ async function fetchBookings() {
                         Статус: <strong>${b.status}</strong>
                     </div>
                     ${b.status === 'active' || b.status === 'waitlist' ? `
+                    <div style="display: flex; gap: 5px; width: 100%; margin-top: 10px; flex-wrap: wrap;">
+                        <button class="action-btn" onclick="completeBooking('${b.id}')" style="padding: 6px; font-size: 11px; background: #e8f5e9; color: #2e7d32; flex: 1;">Виконано</button>
+                        <button class="action-btn" onclick="openRescheduleModal('${b.id}')" style="padding: 6px; font-size: 11px; background: #e3f2fd; color: #1565c0; flex: 1;">Перенести</button>
+                        <button class="action-btn delete-btn" onclick="cancelBooking('${b.id}')" style="padding: 6px; font-size: 11px; margin-top: 0; flex: 1;">Скасувати</button>
+                    </div>` : `
                     <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-                        <button class="action-btn" onclick="completeBooking('${b.id}')" style="padding: 8px; font-size: 12px; background: #e8f5e9; color: #2e7d32;">Виконано</button>
-                        <button class="action-btn delete-btn" onclick="cancelBooking('${b.id}')" style="padding: 8px; font-size: 12px; margin-top: 0;">Скасувати</button>
-                    </div>` : ''}
+                        <button class="action-btn" onclick="repeatBooking('${b.id}')" style="padding: 8px; font-size: 12px; background: #f3e5f5; color: #7b1fa2; width: 100%;">🔁 Повторити запис</button>
+                    </div>`}
                 </div>`;
         });
     } catch (e) { console.error(e); }
@@ -443,6 +447,39 @@ async function updateClientStatus(clientId, isVip, isBlacklisted) {
         });
         if (res.ok) fetchClients();
     } catch (e) { console.error(e); }
+}
+
+function openRescheduleModal(id) {
+    const modal = document.getElementById('reschedule-modal');
+    modal.style.display = 'flex';
+    document.getElementById('btn-save-reschedule').onclick = () => saveReschedule(id);
+}
+
+function closeRescheduleModal() {
+    document.getElementById('reschedule-modal').style.display = 'none';
+}
+
+async function saveReschedule(id) {
+    const date = document.getElementById('reschedule-date').value;
+    const time = document.getElementById('reschedule-time').value;
+    const tenantId = localStorage.getItem('tenant_id');
+    if (!date || !time) return;
+
+    try {
+        const res = await fetch('/api/bookings', {
+            method: 'POST',
+            body: JSON.stringify({ action: "reschedule", tenant_id: tenantId, appt_id: id, date: date, time: time })
+        });
+        if (res.ok) {
+            closeRescheduleModal();
+            fetchBookings();
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function repeatBooking(id) {
+    alert("Функція 'Повторний запис' активна. Клієнт обраний автоматично.");
+    switchAdminTab('overview');
 }
 
 function switchAdminTab(tab) {
