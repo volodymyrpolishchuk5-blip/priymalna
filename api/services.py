@@ -32,6 +32,13 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(body)
             action = data.get("action")
             tenant_id = data.get("tenant_id")
+            user_id = data.get("user_id")
+
+            # Access Control: Only owner can manage services
+            tenant = db.get_tenant_by_id(tenant_id)
+            if not tenant or str(tenant["owner_telegram_id"]) != str(user_id):
+                self._json(403, {"error": "Only owner can manage services"})
+                return
 
             if action == "add_service":
                 db.add_service(tenant_id, data.get("name"), int(data.get("price", 0)), int(data.get("duration", 60)))

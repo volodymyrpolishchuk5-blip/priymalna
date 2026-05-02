@@ -147,12 +147,18 @@ async function fetchMasters(tenantId) {
 
 async function fetchBookings() {
     const tenantId = localStorage.getItem('tenant_id');
+    const user = tg.initDataUnsafe.user;
     const container = document.getElementById('bookings-container');
     if (!container || !tenantId) return;
     
     container.innerHTML = '<p style="text-align:center; color:#777;">Завантаження...</p>';
     try {
-        const response = await fetch(`/api/bookings?tenant=${tenantId}`);
+        const url = `/api/bookings?tenant=${tenantId}&user_id=${user ? user.id : ''}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+             container.innerHTML = '<p style="text-align:center; color:red;">Доступ заборонено</p>';
+             return;
+        }
         const bookings = await response.json();
         
         container.innerHTML = '';
@@ -349,7 +355,9 @@ async function saveModalMaster() {
     const name = document.getElementById('master-name').value;
     const specialty = document.getElementById('master-specialty').value;
     const tgId = document.getElementById('master-tg-id').value;
+    const commission = document.getElementById('master-commission').value;
     const tenantId = localStorage.getItem('tenant_id');
+    const user = tg.initDataUnsafe.user;
 
     if (!name || !specialty) {
         alert("Заповніть ім'я та спеціалізацію!");
@@ -362,25 +370,36 @@ async function saveModalMaster() {
             body: JSON.stringify({
                 action: "add_master",
                 tenant_id: tenantId,
+                user_id: user ? user.id : null,
                 name: name,
                 specialty: specialty,
-                telegram_id: tgId || null
+                telegram_id: tgId || null,
+                commission_rate: commission
             })
         });
         if (res.ok) {
             closeMasterModal();
             fetchMasters(tenantId);
+        } else {
+            const err = await res.json();
+            alert(err.error || "Помилка");
         }
     } catch (e) { console.error(e); }
 }
 
 async function deleteMaster(id, name) {
     const tenantId = localStorage.getItem('tenant_id');
+    const user = tg.initDataUnsafe.user;
     if (confirm(`Видалити майстра "${name}"?`)) {
         try {
             const res = await fetch('/api/masters', {
                 method: 'POST',
-                body: JSON.stringify({ action: "delete_master", tenant_id: tenantId, master_id: id })
+                body: JSON.stringify({ 
+                    action: "delete_master", 
+                    tenant_id: tenantId, 
+                    user_id: user ? user.id : null,
+                    master_id: id 
+                })
             });
             if (res.ok) fetchMasters(tenantId);
         } catch (e) { console.error(e); }

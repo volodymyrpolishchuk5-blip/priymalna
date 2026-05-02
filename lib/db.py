@@ -39,14 +39,20 @@ def get_tenant_by_id(tenant_id: str):
 
 # ===================== MASTERS =====================
 
-def add_master(tenant_id: str, name: str, specialty: str, telegram_id=None):
+def add_master(tenant_id: str, name: str, specialty: str, telegram_id=None, commission_rate=50):
     db = get_db()
     db.table("masters").insert({
         "tenant_id": tenant_id,
         "name": name,
         "specialty": specialty,
         "telegram_id": telegram_id,
+        "commission_rate": commission_rate
     }).execute()
+
+def get_master_by_tg_id(tenant_id: str, tg_id: str):
+    db = get_db()
+    res = db.table("masters").select("*").eq("tenant_id", tenant_id).eq("telegram_id", tg_id).maybe_single().execute()
+    return res.data if res and getattr(res, "data", None) else None
 
 def get_masters_by_tenant(tenant_id: str):
     db = get_db()
@@ -134,11 +140,16 @@ def add_appointment(tenant_id, master_id, client_id, client_name, client_phone, 
     }).execute()
     return res.data[0]["id"] if res.data else None
 
-def get_appointments_by_tenant(tenant_id: str):
+def get_appointments_by_tenant(tenant_id: str, master_id: int = None):
     db = get_db()
-    res = db.table("appointments").select(
-        "id, client_id, client_name, client_phone, service, date, time, status, masters(name)"
-    ).eq("tenant_id", tenant_id).order("date").order("time").execute()
+    query = db.table("appointments").select(
+        "id, client_id, client_name, client_phone, service, price, date, time, status, masters(name)"
+    ).eq("tenant_id", tenant_id)
+    
+    if master_id:
+        query = query.eq("master_id", master_id)
+        
+    res = query.order("date").order("time").execute()
     rows = []
     for r in (res.data or []):
         rows.append({
@@ -147,6 +158,7 @@ def get_appointments_by_tenant(tenant_id: str):
             "name": r["client_name"],
             "phone": r["client_phone"],
             "service": r["service"],
+            "price": r.get("price") or 0,
             "date": r["date"],
             "time": r["time"],
             "status": r["status"],

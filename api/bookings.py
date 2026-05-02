@@ -10,16 +10,34 @@ from urllib.parse import urlparse, parse_qs
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        parsed = urlparse(self.path)
-        params = parse_qs(parsed.query)
-        tenant_id = params.get("tenant", [None])[0]
+        try:
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            tenant_id = params.get("tenant", [None])[0]
+            user_id = params.get("user_id", [None])[0]
 
-        if not tenant_id:
-            self._json(400, {"error": "tenant parameter required"})
-            return
+            if not tenant_id:
+                self._json(400, {"error": "tenant parameter required"})
+                return
 
-        bookings = db.get_appointments_by_tenant(tenant_id)
-        self._json(200, bookings)
+            # Check if user is owner
+            tenant = db.get_tenant_by_id(tenant_id)
+            is_owner = tenant and str(tenant["owner_telegram_id"]) == str(user_id)
+            
+            master_id = None
+            if not is_owner and user_id:
+                # Check if user is a master
+                master = db.get_master_by_tg_id(tenant_id, str(user_id))
+                if master:
+                    master_id = master["id"]
+                else:
+                    self._json(403, {"error": "Access denied"})
+                    return
+
+            bookings = db.get_appointments_by_tenant(tenant_id, master_id)
+            self._json(200, bookings)
+        except Exception as e:
+            self._json(500, {"error": str(e)})
 
     def do_OPTIONS(self):
         self.send_response(200)
