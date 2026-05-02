@@ -1,9 +1,13 @@
-import json
+# Fix path robustly
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from lib import db
+import json
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
+from lib import db
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -36,8 +40,14 @@ class handler(BaseHTTPRequestHandler):
 
             # Access Control: Only owner can manage services
             tenant = db.get_tenant_by_id(tenant_id)
-            if not tenant or str(tenant["owner_telegram_id"]) != str(user_id):
-                self._json(403, {"error": "Only owner can manage services"})
+            if not tenant:
+                self._json(404, {"error": "Tenant not found"})
+                return
+
+            # Robust user_id check
+            is_owner = str(tenant["owner_telegram_id"]) == str(user_id)
+            if not is_owner:
+                self._json(403, {"error": f"Access denied for user {user_id}"})
                 return
 
             if action == "add_service":

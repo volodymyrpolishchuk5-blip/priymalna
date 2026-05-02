@@ -364,6 +364,10 @@ async function saveModalService() {
         if (res.ok) {
             closeModal();
             fetchServices(tenantId);
+            showToast("Послугу збережено!");
+        } else {
+            const err = await res.json();
+            alert("Помилка: " + (err.error || "Не вдалося зберегти"));
         }
     } catch (e) { console.error(e); }
 }
