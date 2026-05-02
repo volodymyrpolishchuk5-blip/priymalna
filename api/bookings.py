@@ -84,6 +84,23 @@ class handler(BaseHTTPRequestHandler):
                     self._json(200, {"status": "ok"})
                 else:
                     self._json(404, {"error": "Appointment not found"})
+            elif action == "repeat_booking_with_time":
+                old_appt = db.get_appointment_by_id(int(data.get("appt_id")))
+                if old_appt:
+                    db.add_appointment(
+                        tenant_id,
+                        old_appt["master_id"],
+                        old_appt["client_id"],
+                        old_appt["client_name"],
+                        old_appt["client_phone"],
+                        old_appt["service"],
+                        old_appt["price"],
+                        data.get("date"),
+                        data.get("time")
+                    )
+                    self._json(200, {"status": "ok"})
+                else:
+                    self._json(404, {"error": "Appointment not found"})
             else:
                 self._json(400, {"error": "invalid action"})
         except Exception as e:

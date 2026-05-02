@@ -499,6 +499,7 @@ async function updateClientStatus(clientId, isVip, isBlacklisted) {
 
 function openRescheduleModal(id) {
     const modal = document.getElementById('reschedule-modal');
+    modal.querySelector('h3').innerText = "Перенести запис";
     modal.style.display = 'flex';
     document.getElementById('btn-save-reschedule').onclick = () => saveReschedule(id);
 }
@@ -508,10 +509,16 @@ function closeRescheduleModal() {
 }
 
 async function saveReschedule(id) {
-    const date = document.getElementById('reschedule-date').value;
-    const time = document.getElementById('reschedule-time').value;
+    const dateInput = document.getElementById('reschedule-date');
+    const timeInput = document.getElementById('reschedule-time');
+    const date = dateInput.value;
+    const time = timeInput.value;
     const tenantId = localStorage.getItem('tenant_id');
-    if (!date || !time) return;
+
+    if (!date || !time) {
+        alert("Оберіть дату та час!");
+        return;
+    }
 
     try {
         const res = await fetch('/api/bookings', {
@@ -521,22 +528,40 @@ async function saveReschedule(id) {
         if (res.ok) {
             closeRescheduleModal();
             fetchBookings();
+        } else {
+            alert("Помилка при збереженні");
         }
     } catch (e) { console.error(e); }
 }
 
 async function repeatBooking(id) {
-    const tenantId = localStorage.getItem('tenant_id');
-    try {
-        const res = await fetch('/api/bookings', {
-            method: 'POST',
-            body: JSON.stringify({ action: "repeat_booking", tenant_id: tenantId, appt_id: id })
-        });
-        if (res.ok) {
-            alert("Повторний запис створено на сьогодні! Ви можете змінити час у вкладці 'Записи'.");
-            fetchBookings();
+    // Open modal to select new date/time for the repeat
+    const modal = document.getElementById('reschedule-modal');
+    modal.querySelector('h3').innerText = "Повторити запис";
+    modal.style.display = 'flex';
+    
+    document.getElementById('btn-save-reschedule').onclick = async () => {
+        const date = document.getElementById('reschedule-date').value;
+        const time = document.getElementById('reschedule-time').value;
+        const tenantId = localStorage.getItem('tenant_id');
+
+        if (!date || !time) {
+            alert("Оберіть дату та час!");
+            return;
         }
-    } catch (e) { console.error(e); }
+
+        try {
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                body: JSON.stringify({ action: "repeat_booking_with_time", tenant_id: tenantId, appt_id: id, date: date, time: time })
+            });
+            if (res.ok) {
+                closeRescheduleModal();
+                fetchBookings();
+                alert("Запис успішно повторено!");
+            }
+        } catch (e) { console.error(e); }
+    };
 }
 
 function switchAdminTab(tab) {
