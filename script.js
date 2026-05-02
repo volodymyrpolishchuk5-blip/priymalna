@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tenantId) {
         if (document.getElementById('services') || document.getElementById('admin-services')) {
             fetchServices(tenantId);
+            if (document.getElementById('admin-overview')) {
+                fetchStats();
+            }
         }
         if (document.getElementById('masters-list') || document.getElementById('admin-masters')) {
             fetchMasters(tenantId);
@@ -177,6 +180,20 @@ async function fetchBookings() {
                     </div>` : ''}
                 </div>`;
         });
+    } catch (e) { console.error(e); }
+}
+
+async function fetchStats() {
+    const tenantId = localStorage.getItem('tenant_id');
+    if (!tenantId) return;
+    try {
+        const res = await fetch(`/api/stats?tenant=${tenantId}`);
+        const stats = await res.json();
+        
+        document.getElementById('stats-today').innerText = `${stats.today_income} ₴`;
+        document.getElementById('stats-week').innerText = `${stats.week_income} ₴`;
+        document.getElementById('stats-month').innerText = `${stats.month_income} ₴`;
+        document.getElementById('stats-total').innerText = stats.total_bookings;
     } catch (e) { console.error(e); }
 }
 
@@ -419,6 +436,7 @@ function switchAdminTab(tab) {
     if (tab === 'overview') {
         document.getElementById('admin-overview').style.display = 'block';
         document.querySelectorAll('.nav-item')[0].classList.add('active');
+        fetchStats();
     } else if (tab === 'bookings') {
         document.getElementById('admin-bookings').style.display = 'block';
         document.querySelectorAll('.nav-item')[1].classList.add('active');

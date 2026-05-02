@@ -134,9 +134,18 @@ async def handle_webapp_data(message: types.Message, bot: Bot):
             else:
                 client_id = db.create_client(tenant_id, name, phone)
 
+            # Get service price for snapshot
+            service_name = data["service"]
+            services = db.get_services_by_tenant(tenant_id)
+            price = 0
+            for s in services:
+                if s["name"] == service_name:
+                    price = s["price"]
+                    break
+
             appt_id = db.add_appointment(
                 tenant_id, int(master_id) if master_id else None, client_id,
-                name, phone, data["service"], data["date"], data["time"]
+                name, phone, service_name, price, data["date"], data["time"]
             )
             await message.answer(
                 f"✅ **Запис прийнято!**\n\n"

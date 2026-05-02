@@ -118,7 +118,7 @@ def delete_service(service_id: int, tenant_id: str):
 
 # ===================== APPOINTMENTS =====================
 
-def add_appointment(tenant_id, master_id, client_id, client_name, client_phone, service, date, time, status="active"):
+def add_appointment(tenant_id, master_id, client_id, client_name, client_phone, service, price, date, time, status="active"):
     db = get_db()
     res = db.table("appointments").insert({
         "tenant_id": tenant_id,
@@ -127,6 +127,7 @@ def add_appointment(tenant_id, master_id, client_id, client_name, client_phone, 
         "client_name": client_name,
         "client_phone": client_phone,
         "service": service,
+        "price": price,
         "date": date,
         "time": time,
         "status": status,
@@ -160,3 +161,40 @@ def update_appointment_datetime(appt_id: int, tenant_id: str, new_date: str, new
 def update_appointment_status(appt_id: int, tenant_id: str, status: str):
     db = get_db()
     db.table("appointments").update({"status": status}).eq("id", appt_id).eq("tenant_id", tenant_id).execute()
+
+# ===================== STATS =====================
+
+def get_stats(tenant_id: str):
+    db = get_db()
+    # Fetch all appointments to calculate stats
+    # In a larger app, we would use SQL aggregations, but for now, we'll do it in Python
+    res = db.table("appointments").select("price, status, created_at").eq("tenant_id", tenant_id).execute()
+    appts = res.data or []
+    
+    stats = {
+        "today_income": 0,
+        "week_income": 0,
+        "month_income": 0,
+        "total_bookings": len(appts),
+        "completed_bookings": 0
+    }
+    
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    
+    for a in appts:
+        price = a.get("price") or 0
+        status = a.get("status")
+        created_at = datetime.fromisoformat(a["created_at"].replace("Z", "+00:00"))
+        
+        if status == "виконано":
+            stats["completed_bookings"] += 1
+            # Check date ranges
+            if created_at.date() == now.date():
+                stats["today_income"] += price
+            if created_at > now - timedelta(days=7):
+                stats["week_income"] += price
+            if created_at > now - timedelta(days=30):
+                stats["month_income"] += price
+                
+    return stats
