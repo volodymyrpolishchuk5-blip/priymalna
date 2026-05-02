@@ -528,8 +528,9 @@ async function saveReschedule(id) {
         if (res.ok) {
             closeRescheduleModal();
             fetchBookings();
+            showToast("Запис перенесено!");
         } else {
-            alert("Помилка при збереженні");
+            alert("Помилка при перенесенні");
         }
     } catch (e) { console.error(e); }
 }
@@ -558,7 +559,9 @@ async function repeatBooking(id) {
             if (res.ok) {
                 closeRescheduleModal();
                 fetchBookings();
-                alert("Запис успішно повторено!");
+                showToast("Створено повторний запис!");
+            } else {
+                alert("Помилка при створенні запису");
             }
         } catch (e) { console.error(e); }
     };
