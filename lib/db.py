@@ -104,8 +104,32 @@ def create_db_client(tenant_id: str, name: str, phone: str):
 
 def get_clients_by_tenant(tenant_id: str):
     db = get_db()
+    # 1. Try to get from clients table
     res = db.table("clients").select("*").eq("tenant_id", tenant_id).execute()
-    return res.data or []
+    if res.data and len(res.data) > 0:
+        return res.data
+    
+    # 2. Fallback: If clients table is empty for this tenant, 
+    # try to reconstruct from appointments (since we know they exist there)
+    res_appts = db.table("appointments").select("client_name, client_phone, created_at").eq("tenant_id", tenant_id).execute()
+    if res_appts.data:
+        # Deduplicate by phone
+        seen = set()
+        fallback_clients = []
+        for a in res_appts.data:
+            if a["client_phone"] not in seen:
+                seen.add(a["client_phone"])
+                fallback_clients.append({
+                    "id": f"fb_{len(seen)}",
+                    "name": a["client_name"],
+                    "phone": a["client_phone"],
+                    "created_at": a["created_at"],
+                    "is_vip": False,
+                    "is_blacklisted": False
+                })
+        return fallback_clients
+        
+    return []
 
 def update_client_status(client_id: int, tenant_id: str, is_vip: bool = None, is_blacklisted: bool = None):
     db = get_db()
