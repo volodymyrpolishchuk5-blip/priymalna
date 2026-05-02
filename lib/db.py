@@ -1,15 +1,17 @@
 import os
 from supabase import create_client, Client
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
-
-_client: Client = None
-
 def get_db() -> Client:
     global _client
     if _client is None:
-        _client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        url = os.environ.get("SUPABASE_URL")
+        # Try both common names for the key
+        key = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_KEY")
+        
+        if not url or not key:
+            raise ValueError(f"Supabase credentials missing! URL: {'set' if url else 'MISSING'}, KEY: {'set' if key else 'MISSING'}")
+            
+        _client = create_client(url, key)
     return _client
 
 import uuid

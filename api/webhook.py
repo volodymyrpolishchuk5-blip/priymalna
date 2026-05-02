@@ -6,7 +6,7 @@ project_root = os.path.abspath(os.path.join(current_dir, '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-# from lib import db
+from lib import db
 from http.server import BaseHTTPRequestHandler
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, CommandObject
@@ -28,7 +28,7 @@ async def start_handler(message: types.Message, command: CommandObject):
     if args:
         # Client flow
         tenant_id = args
-        tenant = # db.get_tenant_by_id(tenant_id)
+        tenant = db.get_tenant_by_id(tenant_id)
         if not tenant:
             await message.answer("❌ Бізнес не знайдено.")
             return
@@ -41,7 +41,7 @@ async def start_handler(message: types.Message, command: CommandObject):
         await message.answer(f"Вітаємо у {tenant['business_name']}!", reply_markup=markup)
     else:
         # Owner flow
-        tenant = # db.get_tenant_by_owner(owner_id)
+        tenant = db.get_tenant_by_owner(owner_id)
         if tenant:
             url = f"{WEBAPP_URL}/admin.html?tenant={tenant['id']}&admin=1"
             markup = ReplyKeyboardMarkup(
@@ -55,8 +55,8 @@ async def start_handler(message: types.Message, command: CommandObject):
 @dp.message(F.text & ~F.text.startswith("/"))
 async def reg_handler(message: types.Message):
     owner_id = message.from_user.id
-    if not # db.get_tenant_by_owner(owner_id):
-        # db.create_tenant(owner_id, message.text)
+    if not db.get_tenant_by_owner(owner_id):
+        db.create_tenant(owner_id, message.text)
         await message.answer(f"✅ Бізнес {message.text} створено! Натисніть /start")
 
 @dp.message(F.web_app_data)
@@ -70,14 +70,14 @@ async def web_data_handler(message: types.Message, bot: Bot):
             # Simplified booking handler for testing
             phone = data["phone"]
             name = data["name"]
-            client = # db.get_client_by_phone(tenant_id, phone) or {}
-            client_id = client.get("id") or # db.create_client(tenant_id, name, phone)
+            client = db.get_client_by_phone(tenant_id, phone) or {}
+            client_id = client.get("id") or db.create_client(tenant_id, name, phone)
             
-            # db.add_appointment(tenant_id, data.get("master_id"), client_id, name, phone, data["service"], 0, data["date"], data["time"])
+            db.add_appointment(tenant_id, data.get("master_id"), client_id, name, phone, data["service"], 0, data["date"], data["time"])
             await message.answer(f"✅ Запис {data['date']} {data['time']} прийнято!")
             
             # Notify owner
-            tenant = # db.get_tenant_by_id(tenant_id)
+            tenant = db.get_tenant_by_id(tenant_id)
             if tenant:
                 await bot.send_message(tenant["owner_telegram_id"], f"🔔 Новий запис: {name} {data['service']}")
     except Exception as e:
