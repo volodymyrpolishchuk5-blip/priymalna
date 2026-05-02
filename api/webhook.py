@@ -16,13 +16,13 @@ import asyncio
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 WEBAPP_URL = os.environ.get("WEBAPP_URL")  # e.g. https://your-app.vercel.app
 
-bot = Bot(token=BOT_TOKEN)
+# Remove global bot initialization
 dp = Dispatcher()
 
 # ===================== HANDLERS =====================
 
 @dp.message(CommandStart())
-async def start_command(message: types.Message, command: CommandObject):
+async def start_command(message: types.Message, command: CommandObject, bot: Bot):
     args = command.args
     if args:
         # Client flow: deep-linked to a specific tenant
@@ -91,7 +91,7 @@ async def handle_registration(message: types.Message):
         )
 
 @dp.message(F.web_app_data)
-async def handle_webapp_data(message: types.Message):
+async def handle_webapp_data(message: types.Message, bot: Bot):
     try:
         data = json.loads(message.web_app_data.data)
         action = data.get("action")
@@ -181,8 +181,13 @@ class handler(BaseHTTPRequestHandler):
             body = self.rfile.read(content_length)
 
             async def process():
-                update = types.Update.model_validate_json(body)
-                await dp.feed_update(bot=bot, update=update)
+                # Initialize bot inside the current event loop
+                bot = Bot(token=BOT_TOKEN)
+                try:
+                    update = types.Update.model_validate_json(body)
+                    await dp.feed_update(bot=bot, update=update)
+                finally:
+                    await bot.session.close()
 
             asyncio.run(process())
             self.send_response(200)
