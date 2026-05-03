@@ -143,9 +143,9 @@ async function fetchMasters(tenantId) {
                             </div>
                         </div>
                         <div style="margin-bottom: 12px;">
-                            <span class="copy-hint" onclick="copyToClipboard('${tgIdDisplay}')" style="font-size: 11px; background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: inline-block;">
-                                🆔 ${tgIdDisplay}
-                            </span>
+                            <a href="${tgIdDisplay.startsWith('http') ? tgIdDisplay : 'https://t.me/' + tgIdDisplay.replace('@', '')}" target="_blank" style="text-decoration: none; font-size: 11px; background: #e3f2fd; color: #1565c0; padding: 6px 12px; border-radius: 6px; display: inline-block; font-weight: 600;">
+                                🆔 ${tgIdDisplay.replace('https://t.me/', '@')} (Відкрити ТГ)
+                            </a>
                         </div>
                         <div style="display: flex; gap: 8px; width: 100%;">
                             <button class="action-btn" onclick="editMaster('${m.id}', '${m.name}', '${m.specialty}', '${m.telegram_id || ''}', ${m.commission_rate})" style="flex: 1; padding: 10px; background: #f5f5f5; color: #333; font-size: 12px; margin-top: 0;">Редагувати</button>
