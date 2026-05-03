@@ -580,10 +580,14 @@ async function saveReschedule(id) {
     const time = timeInput.value;
     const tenantId = localStorage.getItem('tenant_id');
 
+    const saveBtn = document.getElementById('btn-save-reschedule');
     if (!date || !time) {
         alert("Оберіть дату та час!");
         return;
     }
+
+    saveBtn.innerText = "Зберігаю...";
+    saveBtn.disabled = true;
 
     try {
         const res = await fetch('/api/bookings', {
@@ -595,26 +599,44 @@ async function saveReschedule(id) {
             fetchBookings();
             showToast("Запис перенесено!");
         } else {
-            alert("Помилка при перенесенні");
+            const err = await res.json();
+            alert("Помилка: " + (err.error || "не вдалося перенести"));
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e);
+        alert("Помилка мережі");
+    } finally {
+        saveBtn.innerText = "Зберегти";
+        saveBtn.disabled = false;
+    }
 }
 
 async function repeatBooking(id) {
     // Open modal to select new date/time for the repeat
     const modal = document.getElementById('reschedule-modal');
     modal.querySelector('h3').innerText = "Повторити запис";
+    
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('reschedule-date').value = today;
+    document.getElementById('reschedule-time').value = "";
+    
     modal.style.display = 'flex';
     
-    document.getElementById('btn-save-reschedule').onclick = async () => {
+    const saveBtn = document.getElementById('btn-save-reschedule');
+    saveBtn.innerText = "Зберегти";
+    saveBtn.onclick = async () => {
         const date = document.getElementById('reschedule-date').value;
         const time = document.getElementById('reschedule-time').value;
         const tenantId = localStorage.getItem('tenant_id');
 
         if (!date || !time) {
-            alert("Оберіть дату та час!");
+            alert("Будь ласка, оберіть дату та час!");
             return;
         }
+
+        saveBtn.innerText = "Зберігаю...";
+        saveBtn.disabled = true;
 
         try {
             const res = await fetch('/api/bookings', {
@@ -626,9 +648,16 @@ async function repeatBooking(id) {
                 fetchBookings();
                 showToast("Створено повторний запис!");
             } else {
-                alert("Помилка при створенні запису");
+                const err = await res.json();
+                alert("Помилка сервера: " + (err.error || "невідома"));
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            alert("Помилка мережі");
+        } finally {
+            saveBtn.innerText = "Зберегти";
+            saveBtn.disabled = false;
+        }
     };
 }
 
