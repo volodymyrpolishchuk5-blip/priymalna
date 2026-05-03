@@ -142,12 +142,20 @@ def delete_client(client_id: int, tenant_id: str):
     db = get_db()
     db.table("clients").delete().eq("id", client_id).eq("tenant_id", tenant_id).execute()
 
-def update_client_data(client_id: int, tenant_id: str, name: str, phone: str):
+def update_client_data(client_id, tenant_id: str, name: str, phone: str):
     db = get_db()
-    db.table("clients").update({
-        "name": name,
-        "phone": phone
-    }).eq("id", client_id).eq("tenant_id", tenant_id).execute()
+    # If client_id is a string (like fb_...), it means we need to create it
+    if isinstance(client_id, str) and client_id.startswith("fb_"):
+        db.table("clients").insert({
+            "tenant_id": tenant_id,
+            "name": name,
+            "phone": phone
+        }).execute()
+    else:
+        db.table("clients").update({
+            "name": name,
+            "phone": phone
+        }).eq("id", int(client_id)).eq("tenant_id", tenant_id).execute()
 
 # ===================== SERVICES =====================
 

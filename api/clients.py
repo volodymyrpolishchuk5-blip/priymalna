@@ -62,7 +62,7 @@ class handler(BaseHTTPRequestHandler):
                 self._json(200, {"status": "ok"})
             elif action == "update_client":
                 db.update_client_data(
-                    int(data.get("client_id")),
+                    data.get("client_id"),
                     tenant_id,
                     data.get("name"),
                     data.get("phone")

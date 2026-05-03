@@ -509,10 +509,6 @@ async function updateClientStatus(clientId, isVip, isBlacklisted) {
 }
 
 function editClient(id, name, phone) {
-    if (id.startsWith('fb_')) {
-        alert("Цей клієнт ще не збережений в базі. Створіть новий запис для нього, щоб він з'явився офіційно.");
-        return;
-    }
     document.getElementById('edit-client-id').value = id;
     document.getElementById('client-name-modal').value = name;
     document.getElementById('client-phone-modal').value = phone;
