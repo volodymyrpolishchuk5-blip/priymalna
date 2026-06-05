@@ -7,6 +7,13 @@
     { "source": "/api/bookings", "destination": "/api/bookings.py" },
     { "source": "/api/clients", "destination": "/api/clients.py" },
     { "source": "/api/stats", "destination": "/api/stats.py" },
-    { "source": "/api/promocodes", "destination": "/api/promocodes.py" }
+    { "source": "/api/promocodes", "destination": "/api/promocodes.py" },
+    { "source": "/api/reminders_cron", "destination": "/api/reminders_cron.py" }
+  ],
+  "crons": [
+    {
+      "path": "/api/reminders_cron",
+      "schedule": "0 10 * * *"
+    }
   ]
 }
